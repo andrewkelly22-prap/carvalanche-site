@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="One-thumb downhill skiing on a mountain that gets harder the further you go." />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="icon-192.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <!-- Added to an iPhone's home screen, it opens full screen like an app. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Carvalanche" />
+    <title>Carvalanche</title>
+    <!-- The studio's logo while the game starts. Styled here, not in style.css, so it shows from the very first frame. -->
+    <style>#studio{z-index:100;background:#fffaf3;flex-direction:column;justify-content:center;align-items:center;gap:18px;font-family:ui-rounded,SF Pro Rounded,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;transition:opacity .35s;animation:.35s 4s forwards studio-away;display:flex;position:fixed;inset:0}#studio[hidden]{display:none}#studio.leaving{opacity:0;pointer-events:none}#studio svg{width:112px;height:auto;animation:.5s cubic-bezier(.34,1.56,.64,1) both studio-pop}#studio p{text-align:center;color:#2b2118;margin:0;font-size:34px;font-weight:800;line-height:1;animation:.5s .12s both studio-rise}#studio p span{color:#ef7d2d;letter-spacing:.45em;text-indent:.45em;text-transform:uppercase;margin-top:10px;font-size:15px;font-weight:700;display:block}@keyframes studio-pop{0%{opacity:0;transform:scale(.8)}}@keyframes studio-rise{0%{opacity:0;transform:translateY(8px)}}@keyframes studio-away{to{opacity:0;visibility:hidden}}@media (prefers-reduced-motion:reduce){#studio svg,#studio p{animation-name:studio-fade}@keyframes studio-fade{0%{opacity:0}}}</style>
+    <script type="module" crossorigin src="./assets/index-BcTL9Zhq.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/dist-CMedSjkm.js">
+    <link rel="modulepreload" crossorigin href="./assets/definitions-BdWVgBTV.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-1ftYLpgd.css">
+  </head>
+  <body>
+    <!-- Happy Acorn Studio's logo for about 1.5 seconds as the game opens (a tap skips it). -->
+    <div id="studio" role="img" aria-label="Happy Acorn Studio">
+      <svg viewBox="36 18 128 178" aria-hidden="true">
+        <rect x="96" y="26" width="10" height="26" rx="5" fill="#4a2a14" transform="rotate(-10 100 40)" />
+        <path d="M56 96 h88 c0 48 -20 80 -44 94 c-24 -14 -44 -46 -44 -94 z" fill="#ef7d2d" />
+        <path d="M44 98 c0 -32 25 -52 56 -52 c31 0 56 20 56 52 c0 8 -6 13 -14 13 h-84 c-8 0 -14 -5 -14 -13 z" fill="#6b3e1f" />
+        <path d="M60 84 q40 -18 80 0" fill="none" stroke="#8a5530" stroke-width="5" stroke-linecap="round" />
+        <path d="M88 124 v40 l34 -20 z" fill="#ffffff" stroke="#ffffff" stroke-width="8" stroke-linejoin="round" />
+      </svg>
+      <p aria-hidden="true">happy acorn<span>studio</span></p>
+    </div>
+    <script>
+      // Fades out once the logo has shown for 1.5 seconds and the game is ready
+      // (main.ts calls window.studioReady), or straight away on a tap.
+      (function () {
+        var studio = document.getElementById('studio');
+        var shownLongEnough = false;
+        var gameReady = false;
+        function leave() {
+          if (studio.classList.contains('leaving')) return;
+          studio.classList.add('leaving');
+          setTimeout(function () { studio.hidden = true; }, 360);
+        }
+        function maybeLeave() { if (shownLongEnough && gameReady) leave(); }
+        setTimeout(function () { shownLongEnough = true; maybeLeave(); }, 1500);
+        window.studioReady = function () { gameReady = true; maybeLeave(); };
+        studio.addEventListener('pointerdown', function () { shownLongEnough = true; maybeLeave(); });
+      })();
+    </script>
+    <!-- The 3D drawing: VoiceOver skips it; the card and the top bar carry the words. -->
+    <div id="game" aria-hidden="true"></div>
+
+    <div id="hud" hidden>
+      <span id="hud-distance">0 ft</span>
+      <span id="hud-middle">❄ 0</span>
+      <span id="hud-right"></span>
+    </div>
+    <!-- Power-ups on now, each with a bar that runs down. -->
+    <div id="powers-on" aria-live="polite"></div>
+    <!-- This run's progress on the three quests (9 November 2026). -->
+    <div id="quest-track"></div>
+    <div id="flash" aria-live="polite"></div>
+    <div id="avalanche" hidden aria-hidden="true"></div>
+    <!-- After a crash: a moment's "Uh oh!" naming what happened, before the results card. -->
+    <div id="crash" hidden aria-live="assertive">
+      <div class="crash-burst" aria-hidden="true"></div>
+      <div class="crash-box">
+        <p id="crash-title"></p>
+        <p id="crash-reason"></p>
+      </div>
+      <!-- Keep going? A revive for snowflakes, offered for a few seconds. -->
+      <div id="revive" hidden>
+        <button id="revive-yes" type="button"><span class="revive-ring" aria-hidden="true"></span><span class="revive-words">Keep going?</span><span id="revive-price" class="revive-price"></span></button>
+        <button id="revive-no" type="button">No thanks</button>
+      </div>
+    </div>
+    <div id="lesson-bar" hidden aria-live="polite"><span>Lesson</span><b id="lesson-step">1 of 4</b><span id="lesson-dots" aria-hidden="true"></span></div>
+    <div id="coach" hidden aria-live="polite">
+      <span id="coach-hand" aria-hidden="true">👆</span>
+      <span id="coach-text"></span>
+    </div>
+
+    <div id="panel" role="dialog" aria-labelledby="title">
+      <!-- The home screen (Layout B, Andrew, 5 November 2026): the character in the chalet behind,
+           the Daily ticket at the top, buttons down the sides and one big button at the bottom. -->
+      <section id="home">
+        <h1 id="title" class="visually-hidden">Carvalanche</h1>
+        <div class="lobby-top">
+          <button id="best" class="chip" type="button" hidden></button>
+          <button id="day-night" class="chip round" type="button"></button>
+          <button id="wallet" class="chip" type="button"></button>
+        </div>
+
+        <!-- The Daily Challenge ticket: one numbered mountain a day, three goals. Opens its own screen. -->
+        <button id="challenge" class="ticket" type="button">
+          <span id="challenge-time" class="ticket-time"></span>
+          <span class="ticket-label">📅 Daily Challenge <span id="challenge-number"></span><span id="challenge-record" hidden></span></span>
+          <span id="challenge-name" class="ticket-name"></span>
+          <span class="ticket-row"><span id="challenge-stars" class="ticket-stars"></span><span id="challenge-prize" class="ticket-prize"></span><span id="challenge-info" class="ticket-info"></span></span>
+        </button>
+
+        <div class="lobby-sides">
+        <div class="lobby-side left">
+          <button id="open-shop" class="tile" type="button"><span class="tile-icon" aria-hidden="true">🧥</span>Locker</button>
+          <button id="open-powers" class="tile" type="button"><span class="tile-icon" aria-hidden="true">⚡</span>Power-ups</button>
+          <button id="open-records" class="tile" type="button"><span class="tile-icon" aria-hidden="true">🏆</span>Top runs</button>
+        </div>
+        <div class="lobby-side right">
+          <button id="open-quests" class="tile" type="button"><span class="tile-icon" aria-hidden="true">🎯</span>Quests<span id="quest-badge" class="badge" aria-hidden="true"></span></button>
+          <button id="open-settings" class="tile" type="button"><span class="tile-icon" aria-hidden="true">⚙️</span>Settings</button>
+        </div>
+        </div>
+
+        <div class="lobby-bottom">
+          <div class="ride-switch" role="radiogroup" aria-label="Skis or snowboard">
+            <button id="home-ski" type="button" role="radio">⛷️ Skis</button>
+            <button id="home-board" type="button" role="radio">🏂 Board</button>
+          </div>
+          <button id="ski" class="play" type="button">SKI!</button>
+        </div>
+      </section>
+
+      <!-- After a run: the score, then go again or go home. -->
+      <section id="after" hidden aria-labelledby="result-big">
+        <div id="result">
+          <p id="result-big"></p>
+          <p id="result-detail"></p>
+        </div>
+        <button id="again" class="primary" type="button">Go again</button>
+        <button id="go-home" type="button">Home</button>
+      </section>
+
+      <section id="quests-screen" hidden aria-labelledby="quests-title">
+        <h1 id="quests-title">Quests</h1>
+        <p class="note">Do one in a single run for extra ❄. New ones come after each run.</p>
+        <ul id="quest-list"></ul>
+        <button id="close-quests" class="primary" type="button">Done</button>
+      </section>
+
+      <section id="powers" hidden aria-labelledby="powers-title">
+        <div class="title-row">
+          <h1 id="powers-title">Power-ups</h1>
+          <span id="powers-wallet" class="wallet"></span>
+        </div>
+        <p class="note">Grab them on the slope. Each upgrade makes one last longer.</p>
+        <ul id="power-list"></ul>
+        <button id="close-powers" class="primary" type="button">Done</button>
+      </section>
+
+      <section id="daily" hidden aria-labelledby="daily-title">
+        <div class="title-row">
+          <h1 id="daily-title">Daily Challenge</h1>
+          <span id="daily-number" class="daily-number"></span>
+        </div>
+        <p class="tagline" id="daily-date"></p>
+
+        <div id="daily-result" hidden>
+          <p id="daily-result-big"></p>
+          <p id="daily-result-detail"></p>
+        </div>
+
+        <div class="group">
+          <h2 id="daily-name"></h2>
+          <ul id="daily-goals"></ul>
+        </div>
+
+        <p id="daily-prize"></p>
+        <div id="daily-tries" aria-label="Your tries today"></div>
+        <button id="daily-start" class="primary" type="button"></button>
+        <p id="daily-next"></p>
+        <div class="row">
+          <button id="share" type="button" hidden>Share</button>
+          <button id="close-daily" type="button">Back</button>
+        </div>
+      </section>
+
+      <section id="welcome" hidden aria-labelledby="welcome-title">
+        <img class="welcome-icon" src="icon-192.png" alt="" width="72" height="72" />
+        <h1 id="welcome-title">Welcome to Carvalanche</h1>
+        <p class="welcome-lead">Ski down an endless mountain, grab snowflakes, and outrun the avalanche.</p>
+        <button id="welcome-tour" class="primary" type="button">Show me how · 30 seconds</button>
+        <button id="welcome-skip" type="button">Skip, let me ski</button>
+        <p class="how">You can see how to play again any time in Settings.</p>
+      </section>
+
+      <section id="ready" hidden aria-labelledby="ready-title">
+        <p class="ready-burst" aria-hidden="true">🎉</p>
+        <h1 id="ready-title">You're ready!</h1>
+        <p class="welcome-lead">The lesson is done. Now the avalanche chases you for real: ski as far as you can.</p>
+        <button id="ready-go" class="primary" type="button">Ski for real</button>
+        <button id="ready-home" type="button">Home</button>
+      </section>
+
+      <section id="settings" hidden aria-labelledby="settings-title">
+        <h1 id="settings-title">Settings</h1>
+
+        <div class="group">
+          <h2>Sound and feel</h2>
+          <div class="setting">
+            <span class="name">Sound<small>Wind, carving and chimes</small></span>
+            <button id="sound" class="switch" type="button" role="switch" aria-label="Sound"></button>
+          </div>
+          <div class="setting">
+            <span class="name">Vibration<small id="vibration-note">Little buzzes on crashes and stars</small></span>
+            <button id="vibration" class="switch" type="button" role="switch" aria-label="Vibration"></button>
+          </div>
+        </div>
+
+        <div class="group">
+          <h2>Time of day</h2>
+          <div class="segments" role="radiogroup" aria-label="Time of day">
+            <button type="button" role="radio" data-light="auto">Real sun</button>
+            <button type="button" role="radio" data-light="day">Day</button>
+            <button type="button" role="radio" data-light="night">Night</button>
+          </div>
+          <p class="note" id="light-status"></p>
+          <button id="use-location" class="link" type="button" hidden>Use my exact location for sunrise and sunset</button>
+        </div>
+
+        <div class="group">
+          <h2>Pick a mountain</h2>
+          <label for="seed">Mountain code</label>
+          <div class="row">
+            <input id="seed" maxlength="24" autocomplete="off" spellcheck="false" autocapitalize="characters" aria-describedby="seed-hint" />
+            <button id="new-seed" type="button">New</button>
+          </div>
+          <p id="seed-hint">Each code builds its own made-up mountain. A resort's name won't give you that resort.</p>
+          <div class="levels" id="levels"></div>
+          <button id="ski-free" type="button">Ski this mountain</button>
+        </div>
+
+        <div class="group">
+          <h2>How to play</h2>
+          <ul class="controls">
+            <li><span aria-hidden="true">👆</span>Slide your thumb left or right to carve; lift it to go straight</li>
+            <li><span aria-hidden="true">⤴️</span>Flick up to jump fallen trees and moguls</li>
+            <li><span aria-hidden="true">⤵️</span>Flick down for a burst of speed</li>
+            <li><span aria-hidden="true">🤸</span>In the air: flick up for a back flip, down for a front flip, sideways to spin</li>
+          </ul>
+          <button id="how-to-play" type="button">Play the quick lesson again</button>
+        </div>
+
+        <div class="group">
+          <h2>Your progress</h2>
+          <button id="reset" class="danger" type="button">Reset progress</button>
+          <p class="note" id="reset-note" hidden></p>
+        </div>
+
+        <p class="about">Carvalanche <span id="app-version"></span> by Happy Acorn Studio<br /><a href="support.html" target="_blank" rel="noopener">Help</a> · <a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="credits.html" target="_blank" rel="noopener">Credits</a><br />No ads, no accounts. Everything stays on this device.</p>
+        <button id="close-settings" class="primary" type="button">Done</button>
+      </section>
+
+      <!-- My top runs: the player's ten best endless runs, kept on this device only. -->
+      <section id="records" hidden aria-labelledby="records-title">
+        <h1 id="records-title">My top runs</h1>
+        <ol id="top-runs"></ol>
+        <p id="top-runs-empty" class="note">Your ten best runs will show here. Go and ski one!</p>
+        <p class="note">Kept on this device only.</p>
+        <button id="close-records" class="primary" type="button">Done</button>
+      </section>
+
+      <section id="shop" hidden>
+        <div class="title-row">
+          <h1>Your skier</h1>
+          <span id="shop-wallet" class="wallet"></span>
+        </div>
+        <div class="rider-pick" role="radiogroup" aria-label="Ride on">
+          <button id="ride-ski" type="button" role="radio">⛷️ Skis</button>
+          <button id="ride-board" type="button" role="radio">🏂 Snowboard</button>
+        </div>
+        <p class="how">Tap anything to try it on.</p>
+        <div id="shop-items"></div>
+        <div class="row">
+          <p id="pack-note" class="how" role="status" hidden></p>
+          <button id="buy" class="buy" type="button" hidden></button>
+          <button id="close-shop" class="primary" type="button">Done</button>
+        </div>
+      </section>
+    </div>
+
+  </body>
+</html>

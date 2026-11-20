@@ -1,0 +1,7 @@
+# Security contact for Carvalanche and Happy Acorn Studio (RFC 9116).
+# Please read the policy first: https://carvalanche.com/security.html
+Contact: mailto:hello@carvalanche.com
+Expires: 2027-10-30T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://carvalanche.com/.well-known/security.txt
+Policy: https://carvalanche.com/security.html

@@ -1,0 +1,243 @@
+<!doctype html>
+<!--
+  The website's front page (https://carvalanche.com). tools/publish-website.sh puts it at the
+  top of the site, with the game itself at /play/ and the Help, Privacy and Credits pages beside it.
+  The App Store button is Apple's official "Download on the App Store" badge (img/app-store-badge.svg),
+  linking to the store page with the website's campaign code (ct=website). Until launch day (November 19th,
+  2026) it was the "Pre-order" badge (img/app-store-preorder-badge.svg, kept for the next game's pre-order).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Carvalanche · Outrun the avalanche</title>
+    <meta name="description" content="Carvalanche: a one-thumb skiing game for iPhone and iPad. Carve, flip and outrun the avalanche, with a new Daily Challenge every day. No ads, no accounts, no data collected." />
+    <meta name="theme-color" content="#7cc3f2" />
+    <link rel="icon" type="image/png" href="icon-192.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta property="og:title" content="Carvalanche" />
+    <meta property="og:description" content="Carve, flip and outrun the avalanche. A new Daily Challenge every day." />
+    <meta property="og:image" content="https://carvalanche.com/img/01-avalanche.jpg" />
+    <style>
+      :root {
+        color-scheme: light;
+        --sky-top: #6fbdf0;
+        --sky-bottom: #e6f4fd;
+        --snow: #ffffff;
+        --text: #15202c;
+        --muted: #4f5d6b;
+        --accent: #00a3c4;
+        --accent-edge: #007a94;
+        --link: #007f99;
+        --card: rgba(255, 255, 255, 0.9);
+        --line: #d5e1ec;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --sky-top: #0b1830;
+          --sky-bottom: #1b2a44;
+          --text: #eef3f8;
+          --muted: #a7b4c3;
+          --card: rgba(16, 24, 36, 0.88);
+          --line: #2b3a50;
+          --link: #5fd6ec;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 55%, var(--sky-bottom) 100%);
+        color: var(--text);
+        font: 17px/1.5 ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      main {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: calc(env(safe-area-inset-top) + 32px) max(16px, env(safe-area-inset-left)) 32px;
+      }
+      header {
+        text-align: center;
+      }
+      .icon {
+        width: 112px;
+        height: 112px;
+        border-radius: 26px;
+        box-shadow: 0 10px 24px rgba(0, 40, 90, 0.25);
+      }
+      h1 {
+        margin: 14px 0 0;
+        font-size: clamp(40px, 9vw, 64px);
+        font-weight: 800;
+        line-height: 1.05;
+        color: #fff;
+        text-shadow: 0 3px 0 rgba(0, 50, 100, 0.25);
+      }
+      .tagline {
+        margin: 6px 0 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 2px 0 rgba(0, 50, 100, 0.2);
+      }
+      .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin: 26px 0 8px;
+      }
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 240px;
+        padding: 15px 26px;
+        border-radius: 999px;
+        font-size: 19px;
+        font-weight: 800;
+        text-decoration: none;
+      }
+      .button.play {
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 5px 0 var(--accent-edge);
+      }
+      .button.play:active {
+        transform: translateY(3px);
+        box-shadow: 0 2px 0 var(--accent-edge);
+      }
+      .store-badge {
+        display: inline-flex;
+        align-items: center;
+      }
+      .store-badge img {
+        display: block;
+        height: 60px;
+        width: auto;
+      }
+      .note {
+        margin: 6px 0 0;
+        text-align: center;
+        font-size: 15px;
+        color: var(--muted);
+      }
+      .shots {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin: 34px 0;
+        overflow-x: auto;
+        padding: 4px 4px 12px;
+        scroll-snap-type: x mandatory;
+      }
+      .shots img {
+        flex: none;
+        width: min(260px, 70vw);
+        aspect-ratio: 1206 / 2622;
+        border-radius: 28px;
+        border: 6px solid #fff;
+        box-shadow: 0 12px 28px rgba(0, 40, 90, 0.22);
+        scroll-snap-align: center;
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 14px;
+      }
+      .feature {
+        padding: 18px 20px;
+        border-radius: 24px;
+        background: var(--card);
+        border: 1px solid var(--line);
+      }
+      .feature h2 {
+        margin: 0 0 4px;
+        font-size: 19px;
+        font-weight: 800;
+      }
+      .feature p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+      footer {
+        margin-top: 36px;
+        padding: 22px 0 calc(env(safe-area-inset-bottom) + 12px);
+        border-top: 1px solid var(--line);
+        text-align: center;
+        font-size: 15px;
+        color: var(--muted);
+      }
+      footer nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px 18px;
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+      footer a {
+        color: var(--link);
+      }
+      footer p {
+        margin: 4px 0;
+      }
+      .tm { font-size: 0.38em; vertical-align: super; font-weight: 600; margin-left: 0.04em; letter-spacing: 0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <img class="icon" src="icon-192.png" alt="" width="112" height="112" />
+        <h1>Carvalanche<span class="tm">™</span></h1>
+        <p class="tagline">Outrun the avalanche.</p>
+        <div class="buttons">
+          <a class="store-badge" id="app-store" href="https://apps.apple.com/app/apple-store/id6828711495?pt=129705238&amp;ct=website&amp;mt=8"><img src="img/app-store-badge.svg" alt="Download on the App Store" width="200" height="67" /></a>
+          <a class="button play" href="play/">Play free in your browser</a>
+        </div>
+        <p class="note">For iPhone and iPad. No ads, no accounts, no data collected.</p>
+      </header>
+
+      <section class="shots" aria-label="Screenshots">
+        <img src="img/01-avalanche.jpg" alt="A skier racing downhill through pine trees with the avalanche close behind" loading="lazy" />
+        <img src="img/02-flip.jpg" alt="A skier mid back flip off a snow ramp" loading="lazy" />
+        <img src="img/06-daily.jpg" alt="The Daily Challenge screen: three goals, each ticked off with a star and a snowflake prize" loading="lazy" />
+      </section>
+
+      <section class="features">
+        <div class="feature">
+          <h2>📅 A new Daily Challenge</h2>
+          <p>One numbered mountain a day, the same for everyone, with three goals: collect snowflakes, jump a fallen tree, land a double back flip. Three tries, three stars and a big snowflake prize. Share your stars with friends.</p>
+        </div>
+        <div class="feature">
+          <h2>👍 One-thumb skiing</h2>
+          <p>Slide to carve, flick up to jump, flick down for speed. Back flips, front flips and spins off natural snow ramps.</p>
+        </div>
+        <div class="feature">
+          <h2>🏔️ An endless mountain</h2>
+          <p>Green to double black in a single run: glades, powder, moguls, rocky chutes and fallen trees, by day or by headlamp at night.</p>
+        </div>
+        <div class="feature">
+          <h2>🎿 Your skier, your style</h2>
+          <p>Collect snowflakes and dress up in the chalet: ski as a penguin, fox, bear, bunny or yeti, with jackets, hats and a crown, on skis or a snowboard.</p>
+        </div>
+      </section>
+
+      <footer>
+        <nav aria-label="About">
+          <a href="support.html">Help</a>
+          <a href="privacy.html">Privacy policy</a>
+          <a href="credits.html">Credits and licences</a>
+          <a href="press.html">Press kit</a>
+          <a href="security.html">Security</a>
+          <a href="mailto:hello@carvalanche.com">hello@carvalanche.com</a>
+        </nav>
+        <p>Carvalanche™ © 2026 Andrew Kelly (Happy Acorn Studio). Carvalanche is a trademark of Andrew Kelly. Every mountain in the game is made up.</p>
+        <p>Apple, iPhone, iPad and App Store are trademarks of Apple Inc.</p>
+      </footer>
+    </main>
+  </body>
+</html>
